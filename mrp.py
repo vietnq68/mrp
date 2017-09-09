@@ -3,20 +3,18 @@ import data
 import data2
 import data3
 
-bom = data2.bom
-materials = data2.materials
+bom = data2.data['bom']
+materials = data2.data['materials']
 
 # needed number of each part for the level that part appears
 # for example ['A_1','A_2','B_1',...] is number of A in level 1,2 and number of B in level 1
 lp_vars = []
 
 # variables for Simplex problem
-# check: https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linprog.html
 A_eq = []
 B_eq = []
 B_ub = []
 A_ub = []
-bounds = []
 objective = []
 
 
@@ -38,12 +36,10 @@ def build_ub():
     for part, num in materials.iteritems():
         row = []
         for var in lp_vars:
-            if part == var.name.split('_')[0]:
-                row.append(1)
-            else:
-                row.append(0)
+            row.append(1 if part == var.name.split('_') else 0)
 
         row.append(0)  # coef for K
+
         A_ub.append(row)
         B_ub.append(num)
 
@@ -65,18 +61,11 @@ def build_eq():
         B_eq.append(0)
 
 
-def build_bounds():
-    for var in lp_vars:
-        bounds.append((0, materials[var.name.split('_')[0]]))
-    bounds.append((0, None))  # bounds for K
-
-
 def main():
     prob = LpProblem("Dong bo san pham", LpMaximize)
     get_variables()
     build_eq()
     build_ub()
-    build_bounds()
 
     lp_vars.append(LpVariable('K', 0, cat=LpInteger))
     num_of_vars = len(lp_vars)
