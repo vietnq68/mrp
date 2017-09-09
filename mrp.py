@@ -81,11 +81,14 @@ def main():
     lp_vars.append(LpVariable('K', 0, cat=LpInteger))
     num_of_vars = len(lp_vars)
 
+    # objective
     prob += lpSum([objective[i] * lp_vars[i] for i in xrange(num_of_vars)])
 
+    # equality constraints
     for i in xrange(len(A_eq)):
         prob += lpSum([A_eq[i][j] * lp_vars[j] for j in xrange(num_of_vars)]) == B_eq[i]
 
+    # inequality constraints
     for i in xrange(len(A_ub)):
         prob += lpSum([A_ub[i][j] * lp_vars[j] for j in xrange(num_of_vars)]) <= B_ub[i]
 
