@@ -13,8 +13,8 @@ lp_vars = []
 # variables for Simplex problem
 A_eq = []
 B_eq = []
-B_ub = []
-A_ub = []
+B_ineq = []
+A_ineq = []
 objective = []
 
 
@@ -27,12 +27,16 @@ def get_variables():
                                     upBound=num,
                                     cat=LpInteger if isinstance(bill[1], int) else LpContinuous)
                 lp_vars.append(lp_var)
-                objective.append(0)
+
+
+def get_objective():
     # objective will be finding maximize of produced products, a number called K
-    objective.append(1)
+    for var in lp_vars:
+        objective.append(0)
+    objective.append(1)  # coef for K
 
 
-def build_ub():
+def get_inequality_constraints():
     for part, num in materials.iteritems():
         row = []
         for var in lp_vars:
@@ -40,11 +44,11 @@ def build_ub():
 
         row.append(0)  # coef for K
 
-        A_ub.append(row)
-        B_ub.append(num)
+        A_ineq.append(row)
+        B_ineq.append(num)
 
 
-def build_eq():
+def get_equality_constraints():
     for level, bill in bom.iteritems():
         row = []
         coef = bill[1]
@@ -64,8 +68,9 @@ def build_eq():
 def main():
     prob = LpProblem("Dong bo san pham", LpMaximize)
     get_variables()
-    build_eq()
-    build_ub()
+    get_objective()
+    get_equality_constraints()
+    get_inequality_constraints()
 
     lp_vars.append(LpVariable('K', 0, cat=LpInteger))
     num_of_vars = len(lp_vars)
@@ -78,16 +83,18 @@ def main():
         prob += lpSum([A_eq[i][j] * lp_vars[j] for j in xrange(num_of_vars)]) == B_eq[i]
 
     # inequality constraints
-    for i in xrange(len(A_ub)):
-        prob += lpSum([A_ub[i][j] * lp_vars[j] for j in xrange(num_of_vars)]) <= B_ub[i]
+    for i in xrange(len(A_ineq)):
+        prob += lpSum([A_ineq[i][j] * lp_vars[j] for j in xrange(num_of_vars)]) <= B_ineq[i]
 
     prob.solve()
 
     # Solution
+    materials_dict = {}
     for v in prob.variables():
-        print v.name, "=", v.varValue
+        materials_dict[v.name] = v.varValue
 
     print "objective=", value(prob.objective)
+    print materials_dict
 
 
 if __name__ == '__main__':
