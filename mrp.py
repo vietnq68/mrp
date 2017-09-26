@@ -2,9 +2,10 @@ from pulp import *
 import data
 import data2
 import data3
+import data4
 
-bom = data2.data['bom']
-materials = data2.data['materials']
+bom = data4.data['bom']
+materials = data4.data['materials']
 
 # needed number of each part for the level that part appears
 # for example ['A_1','A_2','B_1',...] is number of A in level 1,2 and number of B in level 1
@@ -93,6 +94,7 @@ def main():
     for v in prob.variables():
         materials_dict[v.name] = v.varValue
 
+    print("Status:", LpStatus[prob.status])
     print "objective=", value(prob.objective)
     print materials_dict
 
