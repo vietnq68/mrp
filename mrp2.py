@@ -41,6 +41,8 @@ def main():
     madeable_level_vars_dict = {}
     part_level_vars_dict = {}
 
+    part_level_dict = {}
+
     for part,formula in madeable_parts.iteritems():
         madeable_vars_dict[part] = LpVariable(part, lowBound=0, cat=LpInteger)
         madeable_level_vars_dict[part] = []
@@ -65,6 +67,7 @@ def main():
             # lp_var = LpVariable(part + '_' + level,
             #                     lowBound=0,
             #                     cat=LpInteger if isinstance(quantity, int) else LpContinuous)
+            part_level_dict[level+'_'+str(i)] = part + '_' + level
 
             lp_var = LpVariable(level+'_'+str(i),
                                 lowBound=0,
@@ -101,8 +104,10 @@ def main():
     prob.solve()
 
     for var in prob.variables():
-        print "%s=%d" % (var.name, var.varValue)
-
+        if var.name in part_level_dict:
+            print "%s=%d" % (part_level_dict[var.name], var.varValue)
+        else:
+            print "%s=%d" % (var.name, var.varValue)
 
 if __name__ == '__main__':
     main()
